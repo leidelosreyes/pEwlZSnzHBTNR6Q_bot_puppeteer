@@ -18,7 +18,7 @@ async function processLink(link) {
   //         args: ['--no-sandbox']
   // });
 
-  for (const userAgent of userAgents) {
+  
     const browser = await puppeteer.launch({
       executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
       headless: 'new',
@@ -28,10 +28,11 @@ async function processLink(link) {
       let lastUrl = '';
   
       const page = await browser.newPage();
-      await page.setUserAgent(userAgent);
-      console.log(`User Agent: ${userAgent}`);
+    
       while (true) {
         await page.goto(link, { waitUntil: 'domcontentloaded' });
+        await page.setUserAgent(userAgents);
+        console.log(`User Agent: ${userAgents}`);
         console.log(`Initial page loaded: ${link}`);
         await page.waitForTimeout(5000);
   
@@ -84,8 +85,7 @@ async function processLink(link) {
       await browser.close();
     }
 
-  }
-
+  
  
 }
 
