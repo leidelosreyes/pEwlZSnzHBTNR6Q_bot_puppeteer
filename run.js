@@ -4,21 +4,11 @@ const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const targetLinks = require('./data/url.js');
 puppeteer.use(StealthPlugin());
 
-async function getRandomCoordinates(page) {
-  const { width, height } = await page.evaluate(() => {
-    const { body } = document;
-    return { width: body.offsetWidth, height: body.offsetHeight };
-  });
 
-  const randomX = Math.floor(Math.random() * width);
-  const randomY = Math.floor(Math.random() * height);
-
-  return { x: randomX, y: randomY };
-}
 
 async function processLinks(links) {
   const browser = await puppeteer.launch({
-    executablePath: "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+    executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
     headless: false , // Set to true for headless mode, false to view the browser
   });
 
@@ -34,10 +24,8 @@ async function processLinks(links) {
 
     await client.send('Network.setCacheDisabled', { cacheDisabled: true });
     // Log cache status
-    // const cacheDisabled = true; // Assuming cache is disabled
-    // console.log(`Cache is ${cacheDisabled ? 'disabled' : 'enabled'}`);
-    await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:100.0) Gecko/20100101 Firefox/100.0');
-
+    const cacheDisabled = true; // Assuming cache is disabled
+    console.log(`Cache is ${cacheDisabled ? 'disabled' : 'enabled'}`);
     await page.setRequestInterception(true);
 
     page.on('request', (request) => {
