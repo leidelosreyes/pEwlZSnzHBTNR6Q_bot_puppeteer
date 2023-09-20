@@ -23,6 +23,24 @@ async function processLink(link) {
       await page.setViewport({ width: 1920, height: 1080 });
 
       await page.setUserAgent(getRandomUserAgent());
+      await page.setRequestInterception(true);
+
+      page.on('request', (request) => {
+        const resourceType = request.resourceType();
+  
+        if (
+          resourceType === 'image' ||
+          resourceType === 'media' ||
+          resourceType === 'font' ||
+          resourceType === 'stylesheet' ||
+          resourceType === 'fetch' ||
+          resourceType === 'eventsource'
+        ) {
+          request.abort();
+        } else {
+          request.continue();
+        }
+      });
       await page.goto(link, { waitUntil: "domcontentloaded" });
       // console.log(`User Agent: ${userAgent}`);
       console.log(`Initial page loaded: ${link}`);
