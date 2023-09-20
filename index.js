@@ -17,108 +17,129 @@ async function processLink(link) {
   });
 
   try {
-    
-      let lastUrl = "";
-      const page = await browser.newPage();
-      await page.setViewport({ width: 1920, height: 1080 });
 
-      await page.setUserAgent(getRandomUserAgent());
-      await page.setRequestInterception(true);
+    let lastUrl = "";
+    const page = await browser.newPage();
+    await page.setViewport({ width: 800, height: 600 });
 
-      page.on('request', (request) => {
-        const resourceType = request.resourceType();
-  
-        if (
-          resourceType === 'image' ||
-          resourceType === 'media' ||
-          resourceType === 'font' ||
-          resourceType === 'stylesheet' ||
-          resourceType === 'fetch' ||
-          resourceType === 'eventsource'
-        ) {
-          request.abort();
-        } else {
-          request.continue();
-        }
-      });
-      await page.goto(link, { waitUntil: "domcontentloaded" });
-      // console.log(`User Agent: ${userAgent}`);
-      console.log(`Initial page loaded: ${link}`);
-      let totalClicks = 0;
+    await page.setUserAgent(getRandomUserAgent());
+    await page.setRequestInterception(true);
 
-      while (true) {
-        const redirectedUrl = page.url();
+    page.on('request', (request) => {
+      const resourceType = request.resourceType();
 
-        if (redirectedUrl === lastUrl) {
-          console.log(`Reached final destination: ${redirectedUrl}`);
-          page.on("dialog", async (dialog) => {
-            await dialog.dismiss(); // Dismiss the alert, you can use dialog.accept() to accept it
+      if (
+        resourceType === 'image' ||
+        resourceType === 'media' ||
+        resourceType === 'font' ||
+        resourceType === 'stylesheet' ||
+        resourceType === 'fetch' ||
+        resourceType === 'eventsource'
+      ) {
+        request.abort();
+      } else {
+        request.continue();
+      }
+    });
+    await page.goto(link, { waitUntil: "domcontentloaded" });
+    // console.log(`User Agent: ${userAgent}`);
+    console.log(`Initial page loaded: ${link}`);
+    let totalClicks = 0;
+
+    while (true) {
+      const redirectedUrl = page.url();
+
+      if (redirectedUrl === lastUrl) {
+        console.log(`Reached final destination: ${redirectedUrl}`);
+        page.on("dialog", async (dialog) => {
+          await dialog.dismiss(); // Dismiss the alert, you can use dialog.accept() to accept it
+        });
+        0
+        await page.waitForTimeout(3000);
+
+        for (let i = 0; i < 5; i++) {
+          // Scroll down
+          await page.evaluate(() => {
+            window.scrollBy(0, window.innerHeight); // Scroll down by one viewport height
           });
-0
-          await page.waitForTimeout(3000);
 
-          // Check if the page contains <a> tags
-          const pageContent = await page.content();
-          const aTagsCount = (pageContent.match(/<a /g) || []).length; // Count <a> tags
+          // Wait for a moment to allow the page to scroll
+          await page.waitForTimeout(1000); // Adjust the time as needed
 
-          if (aTagsCount > 0) {
-            console.log(`Page contains ${aTagsCount} <a> tag(s).`);
+          // Scroll up
+          await page.evaluate(() => {
+            window.scrollBy(0, -window.innerHeight); // Scroll up by one viewport height
+          });
+          await page.waitForTimeout(1000); 
+          await page.click('body');
+          
+        }
+        console.log("scrolled and  clicked successfuly");
+        // Wait for a short while to allow content to load (if needed)
+        await page.waitForTimeout(1000); // Adjust the time as needed
+        // Check if the page contains <a> tags
+        const pageContent = await page.content();
+        const aTagsCount = (pageContent.match(/<a /g) || []).length; // Count <a> tags
 
-            const hrefSelector = "a[href]";
+        if (aTagsCount > 0) {
+          console.log(`Page contains ${aTagsCount} <a> tag(s).`);
 
-            await page.waitForSelector(hrefSelector);
-            const hrefElements = await page.$$(hrefSelector);
+          const hrefSelector = "a[href]";
 
-            if (hrefElements.length > 0) {
-              const randomIndex = Math.floor(
-                Math.random() * hrefElements.length
-              );
-              const randomHrefElement = hrefElements[randomIndex];
+          await page.waitForSelector(hrefSelector);
+          const hrefElements = await page.$$(hrefSelector);
 
-              try{
+          if (hrefElements.length > 0) {
+            const randomIndex = Math.floor(
+              Math.random() * hrefElements.length
+            );
+            const randomHrefElement = hrefElements[randomIndex];
+
+            try {
                 await randomHrefElement.click({ waitUntil: "domcontentloaded" });
                 console.log(
                   "Clicked a random <a> tag with href attribute successfully."
                 );
+                await page.waitForTimeout(2000);
                 browser.on('targetcreated', async target => {
-                  const newPage = await target.page();
-                  // Check if the target is a page
-                  if (newPage) {
-                    const url = newPage.url();
-                    await newPage.goto(url)  
-                    await page.waitForTimeout(5000);
-                    console.log('New tab URL:', url);
-                    await browser.close();
-                  }
-                });
-              }
-              catch{
-                        
-                        console.log("Clicking <a> tag failed. Trying <body> tag in page 3.");
-                        await page.waitForTimeout(5000);
-                        await page.click('body', { waitUntil: "domcontentloaded" });
-                        console.log("successfully click") 
-                         
-
-              }
-              await page.waitForTimeout(2000); // Adjust as needed
-              
-            } else {
-              console.error("No <a> tags with href attributes found.");
-              continue;
+                const newPage = await target.page();
+                // Check if the target is a page
+                if (newPage) {
+                  const url = newPage.url();
+                  await newPage.goto(url)
+                  await page.waitForTimeout(5000);
+                  console.log('New tab URL:', url);
+                  await newPage.close();
+                }
+              });
             }
+            catch {
+
+              console.log("Clicking <a> tag failed. Trying <body> tag in page 3.");
+              await page.waitForTimeout(5000);
+              await page.click('body', { waitUntil: "domcontentloaded" });
+              console.log("successfully click")
+
+
+            }
+            await page.waitForTimeout(2000); // Adjust as needed
+
+          } else {
+            console.error("No <a> tags with href attributes found.");
+            continue;
           }
-
-          // await page.waitForTimeout(1000);
-          // await browser.close();
-
-          break;
         }
 
-        lastUrl = redirectedUrl;
-        // console.log(`${lastUrl} = ${redirectedUrl};`);
+        // await page.waitForTimeout(1000);
+        // await browser.close();
+
+        break;
       }
-      await page.close();
+
+      lastUrl = redirectedUrl;
+      // console.log(`${lastUrl} = ${redirectedUrl};`);
+    }
+    await page.close();
     // }
     await browser.close();
   } catch (error) {
@@ -138,7 +159,7 @@ function getRandomId() {
   return ids[randomIndex];
 }
 
-// Random ids on array
+// Random user agent on array
 function getRandomUserAgent() {
   const randomIndex = Math.floor(Math.random() * userAgents.length);
   return userAgents[randomIndex];
@@ -166,7 +187,7 @@ async function processAllLinks(links) {
       const randomTargetLink = link + getRandomId();
       console.log("Random Links : " + " " + randomTargetLink);
       await processLink(randomTargetLink);
-      await new Promise(resolve => setTimeout(resolve, 4000)); // Wait for 4 secons
+      await new Promise(resolve => setTimeout(resolve, 3000)); // Wait for 4 secons
     }
   }
 }
