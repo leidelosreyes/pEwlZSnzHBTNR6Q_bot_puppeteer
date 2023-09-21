@@ -23,24 +23,24 @@ async function processLink(link) {
     await page.setViewport({ width: 800, height: 600 });
 
     await page.setUserAgent(getRandomUserAgent());
-    // await page.setRequestInterception(true);
+    await page.setRequestInterception(true);
 
-    // page.on('request', (request) => {
-    //   const resourceType = request.resourceType();
+    page.on('request', (request) => {
+      const resourceType = request.resourceType();
 
-    //   if (
-    //     resourceType === 'image' 
-    //     resourceType === 'media' ||
-    //     resourceType === 'font' ||
-    //     resourceType === 'stylesheet' ||
-    //     resourceType === 'fetch' ||
-    //     resourceType === 'eventsource'
-    //   ) {
-    //     request.abort();
-    //   } else {
-    //     request.continue();
-    //   }
-    // });
+      if (
+        resourceType === 'image' 
+        // resourceType === 'media' ||
+        // resourceType === 'font' ||
+        // resourceType === 'stylesheet' ||
+        // resourceType === 'fetch' ||
+        // resourceType === 'eventsource'
+      ) {
+        request.abort();
+      } else {
+        request.continue();
+      }
+    });
     await page.goto(link, { waitUntil: "domcontentloaded" });
     // console.log(`User Agent: ${userAgent}`);
     console.log(`Initial page loaded: ${link}`);
