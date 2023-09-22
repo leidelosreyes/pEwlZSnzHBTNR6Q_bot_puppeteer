@@ -29,12 +29,12 @@ async function processLink(link) {
       const resourceType = request.resourceType();
 
       if (
-        resourceType === 'image' 
-        // resourceType === 'media' ||
-        // resourceType === 'font' ||
-        // resourceType === 'stylesheet' ||
-        // resourceType === 'fetch' ||
-        // resourceType === 'eventsource'
+        resourceType === 'image' ||
+        resourceType === 'media' ||
+        resourceType === 'font' ||
+        resourceType === 'stylesheet' ||
+        resourceType === 'fetch' ||
+        resourceType === 'eventsource'
       ) {
         request.abort();
       } else {
